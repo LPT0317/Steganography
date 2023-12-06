@@ -298,6 +298,9 @@ module pixel_processing
 						if (mode == MODE_EMB && rd_data) begin
 							ps_next <= WAIT_DATA;
 						end
+						else if (mode == MODE_EXT && ps_counter == 0) begin
+							ps_next <= WAIT_DATA;
+						end
 						else if (mode == MODE_EXT && rd_data && ps_counter == 1) begin
 							ps_next <= WAIT_DATA;
 						end
