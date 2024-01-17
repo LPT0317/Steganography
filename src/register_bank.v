@@ -1,8 +1,8 @@
 
 `timescale 1 ns / 1 ps
 
-	module register_bank
-	#(
+	module register_bank #
+	(
 		// Users to add parameters here
 
 		// User parameters ends
@@ -15,10 +15,17 @@
 	)
 	(
 		// Users to add ports here
-        input wire [C_S_AXI_DATA_WIDTH-1 : 0]din,
-        output wire [C_S_AXI_DATA_WIDTH-1 : 0]addr,
-        output wire bram_wren,
-        output wire [C_S_AXI_DATA_WIDTH-1 : 0]dout,
+		(* X_INTERFACE_INFO = "xilinx.com:user:register_signal:1.0 MASTER_SIGNAL respond_signal" *)
+		input [C_S_AXI_DATA_WIDTH-1 : 0] respond_signal,
+		(* X_INTERFACE_INFO = "xilinx.com:user:register_signal:1.0 MASTER_SIGNAL control_signal" *)
+		output [C_S_AXI_DATA_WIDTH-1 : 0] control_signal,
+		(* X_INTERFACE_INFO = "xilinx.com:user:register_signal:1.0 MASTER_SIGNAL picture_size" *)
+		output [C_S_AXI_DATA_WIDTH-1 : 0] picture_size,
+		(* X_INTERFACE_INFO = "xilinx.com:user:register_signal:1.0 MASTER_SIGNAL message_size" *)
+		output [C_S_AXI_DATA_WIDTH-1 : 0] message_size,
+		// DEBUG
+		input [C_S_AXI_DATA_WIDTH-1 : 0] debug_data1,
+		input [C_S_AXI_DATA_WIDTH-1 : 0] debug_data2,
 		// User ports ends
 		// Do not modify the ports beyond this line
 
@@ -648,17 +655,18 @@
 	// Implement memory mapped register select and read logic generation
 	// Slave register read enable is asserted when valid address is available
 	// and the slave is ready to accept the read address.
+	wire [C_S_AXI_DATA_WIDTH-1 : 0] stt;
 	assign slv_reg_rden = axi_arready & S_AXI_ARVALID & ~axi_rvalid;
 	always @(*)
 	begin
 	      // Address decoding for reading registers
 	      case ( axi_araddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB] )
-	        5'h00   : reg_data_out <= slv_reg0;
+	        5'h00   : reg_data_out <= respond_signal;
 	        5'h01   : reg_data_out <= slv_reg1;
-	        5'h02   : reg_data_out <= din;
+	        5'h02   : reg_data_out <= slv_reg2;
 	        5'h03   : reg_data_out <= slv_reg3;
-	        5'h04   : reg_data_out <= slv_reg4;
-	        5'h05   : reg_data_out <= slv_reg5;
+	        5'h04   : reg_data_out <= debug_data1;
+	        5'h05   : reg_data_out <= debug_data2;
 	        5'h06   : reg_data_out <= slv_reg6;
 	        5'h07   : reg_data_out <= slv_reg7;
 	        5'h08   : reg_data_out <= slv_reg8;
@@ -709,9 +717,10 @@
 	end    
 
 	// Add user logic here
-    assign addr = slv_reg0;
-    assign bram_wren = slv_reg1;
-    assign dout = slv_reg3;
+	
+	assign control_signal = slv_reg1;
+	assign picture_size = slv_reg2;
+	assign message_size = slv_reg3;
 	// User logic ends
 
 	endmodule
